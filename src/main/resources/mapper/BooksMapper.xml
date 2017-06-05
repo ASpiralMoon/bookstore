@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.bookstore.dao.BooksDao">
+
+    <resultMap id="booksResult" type="org.bookstore.dto.Books">
+        <id column="books_id" property="booksId" jdbcType="INTEGER"/>
+        <result column="books_name" property="booksName" jdbcType="VARCHAR"/>
+        <result column="author" property="author" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="queryBooks" parameterType="org.bookstore.dto.Books" resultMap="booksResult">
+        select *
+        from books
+        <where>
+            books_name = #{ booksName }
+            and author = #{ author }
+        </where>
+    </select>
+
+    <insert id="addBooks" parameterType="org.bookstore.dto.Books">
+        insert ignore into
+        books (
+          books_name,
+          author
+        ) values (
+          #{ booksName },
+          #{ author }
+        )
+    </insert>
+</mapper>

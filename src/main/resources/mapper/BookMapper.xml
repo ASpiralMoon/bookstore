@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="org.bookstore.dao.BookDao">
+
+    <resultMap id="bookResult" type="org.bookstore.dto.Book">
+        <id column="book_id" property="bookId" jdbcType="INTEGER"/>
+        <result column="book_name" property="bookName" jdbcType="VARCHAR"/>
+        <result column="author" property="author" jdbcType="VARCHAR"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="inventory" property="inventory" jdbcType="INTEGER"/>
+        <result column="picture" property="picture" jdbcType="VARCHAR"/>
+        <result column="shops_id" property="shopsId" jdbcType="INTEGER"/>
+        <result column="shops_name" property="shopsName" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="approval_comments" property="approvalComments" jdbcType="VARCHAR"/>
+        <result column="approval_admin" property="approvalAdmin" jdbcType="INTEGER"/>
+        <result column="admin_name" property="adminName" jdbcType="VARCHAR"/>
+        <result column="books_id" property="booksId" jdbcType="VARCHAR"/>
+        <result column="review" property="review" jdbcType="VARCHAR"/>
+        <result column="type_id" property="typeId" jdbcType="TINYINT"/>
+        <result column="type_name" property="typeName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <select id="queryBookList" parameterType="org.bookstore.dto.Book" resultMap="bookResult">
+        select
+        b.*,
+        (select u.nickname from user u where u.user_id = #{ shopsId }) as shops_name,
+        u.nickname as admin_name,
+        br.review,
+        t.type_name
+        from book b
+        left join user u on b.approval_admin = u.user_id
+        left join books_review br on b.books_id = br.books_id
+        left join type t on t.type_id = b.type_id
+        <where>
+            <if test="bookName != null">
+                book_name regexp #{ bookName }
+            </if>
+            <if test="author != null">
+                and author regexp #{ author }
+            </if>
+            <if test="shopsId != null">
+                and shops_id = #{ shopsId }
+            </if>
+        </where>
+    </select>
+
+    <insert id="addBook" parameterType="org.bookstore.dto.Book">
+        insert ignore into
+        book (
+          book_name,
+          author,
+          price,
+          inventory,
+          picture,
+          shops_id,
+          books_id,
+          type_id
+        ) values (
+          #{ bookName },
+          #{ author },
+          #{ price },
+          #{ inventory },
+          #{ picture },
+          #{ shopsId },
+          #{ booksId },
+          #{ typeId}
+        )
+    </insert>
+    
+    <update id="alterBook" parameterType="org.bookstore.dto.Book">
+        update book
+        <set>
+            <if test="bookName != null">
+                book_name = #{ bookName },
+            </if>
+            <if test="author != null">
+                author = #{ author },
+            </if>
+            <if test="price != null">
+                price = #{ price },
+            </if>
+            <if test="inventory != null">
+                inventory = #{ inventory },
+            </if>
+            <if test="picture != null">
+                picture = #{ picture },
+            </if>
+            <if test="booksId != null">
+                books_id = #{ booksId },
+            </if>
+            <if test="status != null">
+                status = #{ status },
+            </if>
+            <if test="approvalComments != null">
+                approval_comments = #{ approvalComments },
+            </if>
+            <if test="approvalAdmin != null">
+                approval_admin = #{ approvalAdmin }
+            </if>
+        </set>
+        <where>
+            book_id = #{ bookId }
+        </where>
+    </update>
+
+    <delete id="delBook" parameterType="java.lang.Integer">
+        delete from book
+        <where>
+            book_id = #{ bookId }
+        </where>
+    </delete>
+
+</mapper>
